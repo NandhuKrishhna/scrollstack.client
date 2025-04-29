@@ -31,10 +31,14 @@ const Header: React.FC = () => {
                         <Link to="/" className="text-gray-700 hover:text-blue-600">
                             Home
                         </Link>
+
                         {isLoggedIn ? (
                             <>
                                 <Link to="/dashboard" className="text-gray-700 hover:text-blue-600">
                                     Dashboard
+                                </Link>
+                                <Link to="/profile" className="text-gray-700 hover:text-blue-600">
+                                    Profile
                                 </Link>
                                 <button
                                     onClick={onLogout}
@@ -55,7 +59,7 @@ const Header: React.FC = () => {
                         )}
                     </nav>
 
-                    {/* Mobile Menu Button */}
+
                     <div className="md:hidden">
                         <button onClick={toggleMenu} className="text-gray-700 hover:text-blue-600 focus:outline-none">
                             <svg
@@ -71,7 +75,7 @@ const Header: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Mobile Navigation */}
+
                 {isMenuOpen && (
                     <div className="md:hidden pb-4">
                         <Link to="/" className="block py-2 text-gray-700 hover:text-blue-600">
@@ -81,6 +85,9 @@ const Header: React.FC = () => {
                             <>
                                 <Link to="/dashboard" className="block py-2 text-gray-700 hover:text-blue-600">
                                     Dashboard
+                                </Link>
+                                <Link to="/profile" className="block py-2 text-gray-700 hover:text-blue-600">
+                                    Profile
                                 </Link>
                                 <button onClick={onLogout} className="block w-full text-left py-2 text-red-500 hover:text-red-600">
                                     Logout
