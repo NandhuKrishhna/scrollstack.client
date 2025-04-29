@@ -1,10 +1,25 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import App from './App.tsx';
+import './index.css';
+import { persistor, store } from './redux/store.ts';
+import CustomToaster from './components/CustomToaster.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
-  </StrictMode>,
-)
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <BrowserRouter>
+          <CustomToaster />
+          <Routes>
+            <Route path='/*' element={<App />} />
+          </Routes>
+        </BrowserRouter>
+      </PersistGate>
+    </Provider>
+  </StrictMode>
+);
