@@ -7,15 +7,18 @@ import SignupPage from "./pages/SignupPage";
 import OtpPage from "./pages/OtpPage";
 import ProfilePage from "./pages/ProfilePage";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import PublicRoute from "./routes/PublicRoutes";
 
 const App = () => {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/otp" element={<OtpPage />} />
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/otp" element={<OtpPage />} />
+        </Route>
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
