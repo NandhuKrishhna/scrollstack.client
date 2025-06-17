@@ -23,10 +23,33 @@ export const authApi = apiSlice.injectEndpoints({
             }),
         }),
         getUserArticles: builder.query({
-            query: (id) => ({
-                url: `/get-articles/${id}`,
-                method: "GET",
-            }),
+            query: (params) => {
+                const {
+                    id,
+                    search = "",
+                    sortBy = "createdAt",
+                    order = "desc",
+                    page = 1,
+                    limit = 10,
+                    category = "",
+                } = typeof params === "object" ? params : { id: params }
+
+
+                const queryParams = new URLSearchParams()
+                if (search) queryParams.append("search", search)
+                if (sortBy) queryParams.append("sortBy", sortBy)
+                if (order) queryParams.append("order", order)
+                if (page) queryParams.append("page", page.toString())
+                if (limit) queryParams.append("limit", limit.toString())
+                if (category) queryParams.append("category", category)
+
+                const queryString = queryParams.toString()
+
+                return {
+                    url: `/get-articles/${id}${queryString ? `?${queryString}` : ""}`,
+                    method: "GET",
+                }
+            },
         }),
         editArticle: builder.mutation({
             query: (data) => ({

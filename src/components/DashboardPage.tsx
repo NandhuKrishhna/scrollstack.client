@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react"
 
 import { useEffect, useState } from "react"
@@ -11,17 +13,30 @@ import { Category } from "../utils/enums"
 import { useSelector } from "react-redux"
 import { currentUser } from "../redux/slice/userSlice"
 import { z } from "zod"
-import { Article, articleSchema } from "../utils/dashBoard"
-
-
+import { type Article, articleSchema } from "../utils/dashBoard"
 
 const DashboardPage = () => {
     const user = useSelector(currentUser)
+
+    const [searchTerm, setSearchTerm] = useState("")
+    const [selectedCategory, setSelectedCategory] = useState("")
+    const [currentPage, setCurrentPage] = useState(1)
+    const [itemsPerPage, setItemsPerPage] = useState(10)
+
     const {
         data: articlesResponse,
         isLoading: isLoadingArticles,
         refetch,
-    } = useGetUserArticlesQuery(user?._id, { skip: !user?._id })
+    } = useGetUserArticlesQuery(
+        {
+            id: user?._id,
+            search: searchTerm,
+            category: selectedCategory,
+            page: currentPage,
+            limit: itemsPerPage,
+        },
+        { skip: !user?._id },
+    )
     const articles = articlesResponse?.data || []
 
     const { handleUploardArticle, isLoading: isCreating } = useCreateArticle()
@@ -123,10 +138,9 @@ const DashboardPage = () => {
             setFormData((prev) => ({
                 ...prev,
                 imageBase64: base64Image,
-                imageUrl: ""
+                imageUrl: "",
             }))
             setImagePreview(base64Image)
-
 
             if (errors.imageBase64) {
                 setErrors((prev) => ({ ...prev, imageBase64: undefined }))
@@ -210,6 +224,10 @@ const DashboardPage = () => {
         }
     }
 
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [searchTerm, selectedCategory])
+
     return (
         <div className="min-h-screen bg-gray-100">
             <Header />
@@ -223,6 +241,72 @@ const DashboardPage = () => {
                         <Plus size={18} />
                         Add New Article
                     </button>
+                </div>
+
+                <div className="bg-white p-4 rounded-lg shadow-md mb-6">
+                    <div className="flex flex-col md:flex-row gap-4">
+                        <div className="flex-1">
+                            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+                                Search Articles
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    id="search"
+                                    placeholder="Search by title or content..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                />
+                                <button
+                                    onClick={() => refetch()}
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div className="md:w-1/4">
+                            <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 mb-1">
+                                Filter by Category
+                            </label>
+                            <select
+                                id="category-filter"
+                                value={selectedCategory}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                            >
+                                <option value="">All Categories</option>
+                                {Object.values(Category).map((category) => (
+                                    <option key={category} value={category}>
+                                        {category}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="md:w-1/6">
+                            <label htmlFor="items-per-page" className="block text-sm font-medium text-gray-700 mb-1">
+                                Items Per Page
+                            </label>
+                            <select
+                                id="items-per-page"
+                                value={itemsPerPage}
+                                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                            >
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
                 {isLoadingArticles ? (
@@ -279,8 +363,8 @@ const DashboardPage = () => {
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span
                                                 className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${article.status === "Published"
-                                                    ? "bg-green-100 text-green-800"
-                                                    : "bg-yellow-100 text-yellow-800"
+                                                        ? "bg-green-100 text-green-800"
+                                                        : "bg-yellow-100 text-yellow-800"
                                                     }`}
                                             >
                                                 {article.status}
@@ -312,7 +396,11 @@ const DashboardPage = () => {
                                                     disabled={loadingItems[article._id]}
                                                     title="Delete Article"
                                                 >
-                                                    {loadingItems[article._id] ? <Loader className="animate-spin" size={18} /> : <Trash2 size={18} />}
+                                                    {loadingItems[article._id] ? (
+                                                        <Loader className="animate-spin" size={18} />
+                                                    ) : (
+                                                        <Trash2 size={18} />
+                                                    )}
                                                 </button>
                                             </div>
                                         </td>
@@ -331,6 +419,42 @@ const DashboardPage = () => {
                             <Plus size={18} />
                             Create Your First Article
                         </button>
+                    </div>
+                )}
+
+                {articlesResponse?.data && articlesResponse.data.length > 0 && (
+                    <div className="mt-6 flex justify-between items-center">
+                        <div className="text-sm text-gray-700">
+                            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                            {Math.min(currentPage * itemsPerPage, articlesResponse.data.length)} of {articlesResponse.data.length}{" "}
+                            articles
+                        </div>
+                        <div className="flex space-x-2">
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50"
+                            >
+                                Previous
+                            </button>
+                            {Array.from({ length: Math.ceil(articlesResponse.data.length / itemsPerPage) }, (_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setCurrentPage(i + 1)}
+                                    className={`px-3 py-1 border rounded-md text-sm ${currentPage === i + 1 ? "bg-blue-600 text-white border-blue-600" : "border-gray-300 text-gray-700"
+                                        }`}
+                                >
+                                    {i + 1}
+                                </button>
+                            ))}
+                            <button
+                                onClick={() => setCurrentPage((prev) => prev + 1)}
+                                disabled={currentPage >= Math.ceil(articlesResponse.data.length / itemsPerPage)}
+                                className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50"
+                            >
+                                Next
+                            </button>
+                        </div>
                     </div>
                 )}
             </main>
@@ -416,15 +540,13 @@ const DashboardPage = () => {
                             </div>
 
                             <div className="mb-4">
-                                <label className="block text-gray-700 text-sm font-bold mb-2">
-                                    Article Image
-                                </label>
+                                <label className="block text-gray-700 text-sm font-bold mb-2">Article Image</label>
 
                                 <div className="mb-2">
                                     {imagePreview ? (
                                         <div className="relative w-full h-40 mb-2 border rounded-lg overflow-hidden">
                                             <img
-                                                src={imagePreview}
+                                                src={imagePreview || "/placeholder.svg"}
                                                 alt="Preview"
                                                 className="w-full h-full object-cover"
                                             />
